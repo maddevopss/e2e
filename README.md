@@ -58,7 +58,7 @@ cp .env.example .env
 Variables principales :
 
 ```text
-TEST_BASE_URL=http://localhost:3000
+TEST_BASE_URL=http://127.0.0.1:3000
 TEST_API_URL=http://localhost:5000/api
 TEST_ADMIN_EMAIL=test-admin@example.com
 TEST_PASSWORD=change-me
@@ -122,6 +122,12 @@ La règle anti-scroll horizontal minimale est :
 scrollWidth <= clientWidth + 2
 ```
 
+Les routes sont séparées en deux intentions :
+
+- routes publiques : elles doivent rendre du contenu visible sans overflow horizontal;
+- routes protégées sans session : elles doivent garder un shell responsive sûr et rediriger vers login/auth;
+- routes protégées avec `storageState/auth.json` : elles peuvent valider les vraies pages applicatives.
+
 Après génération du fichier `storageState/auth.json`, les tests responsive peuvent accéder aux pages protégées si l’application accepte la session sauvegardée.
 
 ## CI responsive smoke
@@ -137,13 +143,17 @@ Déclencheurs :
 - pull request vers `main`;
 - lancement manuel avec `workflow_dispatch`.
 
-La variable `TEST_BASE_URL` peut venir :
+La CI autonome :
 
-1. de l’input manuel `base_url`;
-2. du secret GitHub `TEST_BASE_URL`;
-3. du fallback `http://localhost:3000`.
+1. checkout le repo E2E;
+2. checkout le repo frontend;
+3. installe les dépendances;
+4. build le frontend;
+5. démarre `npm run preview` sur `127.0.0.1:3000`;
+6. vérifie la disponibilité du frontend;
+7. lance `npm run test:responsive`.
 
-Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
+Le rapport Playwright HTML et le log du frontend preview sont publiés comme artefacts pendant 7 jours.
 
 ## Règles
 
@@ -155,4 +165,4 @@ Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
 
 ## Statut
 
-Activation en cours. Le setup d’authentification silencieux et le workflow responsive smoke sont présents; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.
+Activation en cours. Le setup d’authentification silencieux, le workflow responsive smoke autonome et la séparation routes publiques/protégées sont présents. Prochaine étape : ajouter un scénario authentifié complet avec backend de test.
