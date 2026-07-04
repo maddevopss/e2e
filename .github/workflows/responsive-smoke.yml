@@ -9,34 +9,63 @@ on:
       base_url:
         description: Frontend URL to test
         required: false
-        default: http://localhost:3000
+        default: http://127.0.0.1:3000
 
 jobs:
   responsive-smoke:
     name: Responsive smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     env:
-      TEST_BASE_URL: ${{ github.event.inputs.base_url || secrets.TEST_BASE_URL || 'http://localhost:3000' }}
+      TEST_BASE_URL: ${{ github.event.inputs.base_url || secrets.TEST_BASE_URL || 'http://127.0.0.1:3000' }}
       E2E_AUTH_FILE: storageState/auth.json
 
     steps:
-      - name: Checkout
+      - name: Checkout E2E
         uses: actions/checkout@v4
+        with:
+          path: e2e
+
+      - name: Checkout frontend
+        uses: actions/checkout@v4
+        with:
+          repository: maddevopss/madsuite-frontend
+          path: frontend
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install dependencies
+      - name: Install E2E dependencies
+        working-directory: e2e
         run: npm install
 
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Start frontend preview
+        working-directory: frontend
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 3000 > ../frontend-preview.log 2>&1 &
+
       - name: Install Playwright browsers
+        working-directory: e2e
         run: npx playwright install --with-deps
 
+      - name: Check frontend availability
+        run: |
+          echo "Checking frontend at ${TEST_BASE_URL}"
+          node -e "const url=process.env.TEST_BASE_URL; let attempts=0; const wait=ms=>new Promise(r=>setTimeout(r,ms)); async function main(){while(attempts<30){attempts++; try{const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),2000); const response=await fetch(url,{signal:controller.signal}); clearTimeout(timer); console.log('Frontend reachable:', response.status); process.exit(0);}catch(err){console.log('Waiting for frontend:', attempts, err.message); await wait(1000);}} console.error('Frontend is not reachable at '+url); process.exit(1);} main();"
+
       - name: Run responsive tests
+        working-directory: e2e
         run: npm run test:responsive
 
       - name: Upload Playwright report
@@ -44,5 +73,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      - name: Upload frontend preview log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-preview-log
+          path: frontend-preview.log
           retention-days: 7
