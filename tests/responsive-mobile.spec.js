@@ -1,4 +1,4 @@
-const { test } = require('@playwright/test');
+const { expect, test } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
 const {
@@ -14,9 +14,12 @@ const viewports = [
   { name: 'desktop', width: 1440, height: 900 }
 ];
 
-const routes = [
+const publicRoutes = [
   { name: 'home', path: '/' },
-  { name: 'login', path: '/login' },
+  { name: 'login', path: '/login' }
+];
+
+const protectedRoutes = [
   { name: 'dashboard', path: '/dashboard' },
   { name: 'timesheet', path: '/timesheet' },
   { name: 'clients', path: '/clients' },
@@ -36,6 +39,16 @@ function resolveStorageState() {
   return fs.existsSync(absolutePath) ? absolutePath : undefined;
 }
 
+function hasStorageState() {
+  return Boolean(resolveStorageState());
+}
+
+async function assertResponsiveShell(page, label) {
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await assertCriticalContentVisible(page);
+  await assertNoHorizontalScroll(page, label);
+}
+
 for (const viewport of viewports) {
   test.describe(`responsive ${viewport.name} ${viewport.width}px`, () => {
     test.use({
@@ -43,13 +56,21 @@ for (const viewport of viewports) {
       storageState: resolveStorageState()
     });
 
-    for (const route of routes) {
-      test(`${route.name} has no horizontal overflow`, async ({ page }) => {
+    for (const route of publicRoutes) {
+      test(`public ${route.name} has no horizontal overflow`, async ({ page }) => {
         await page.goto(route.path, { waitUntil: 'domcontentloaded' });
-        await page.waitForLoadState('networkidle').catch(() => {});
+        await assertResponsiveShell(page, `${route.name} @ ${viewport.width}px`);
+      });
+    }
 
-        await assertCriticalContentVisible(page);
-        await assertNoHorizontalScroll(page, `${route.name} @ ${viewport.width}px`);
+    for (const route of protectedRoutes) {
+      test(`protected ${route.name} has safe responsive behavior`, async ({ page }) => {
+        await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+        await assertResponsiveShell(page, `${route.name} @ ${viewport.width}px`);
+
+        if (!hasStorageState()) {
+          await expect(page).toHaveURL(/login|signin|auth/i);
+        }
       });
     }
   });
