@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
+    "test:auth": "playwright test tests/auth.setup.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
     "report": "playwright show-report"
   },
