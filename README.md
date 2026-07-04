@@ -25,10 +25,12 @@ Ce dépôt valide les parcours critiques MADSuite : authentification, onboarding
 - Playwright
 - Node.js
 - dotenv
+- GitHub Actions
 
 ## Structure
 
 ```text
+.github/workflows/
 tests/
 helpers/
 storageState/
@@ -122,6 +124,27 @@ scrollWidth <= clientWidth + 2
 
 Après génération du fichier `storageState/auth.json`, les tests responsive peuvent accéder aux pages protégées si l’application accepte la session sauvegardée.
 
+## CI responsive smoke
+
+Le workflow suivant exécute les tests responsive :
+
+```text
+.github/workflows/responsive-smoke.yml
+```
+
+Déclencheurs :
+
+- pull request vers `main`;
+- lancement manuel avec `workflow_dispatch`.
+
+La variable `TEST_BASE_URL` peut venir :
+
+1. de l’input manuel `base_url`;
+2. du secret GitHub `TEST_BASE_URL`;
+3. du fallback `http://localhost:3000`.
+
+Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
+
 ## Règles
 
 - Données de test seulement.
@@ -132,4 +155,4 @@ Après génération du fichier `storageState/auth.json`, les tests responsive pe
 
 ## Statut
 
-Activation en cours. Le setup d’authentification silencieux est présent; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.
+Activation en cours. Le setup d’authentification silencieux et le workflow responsive smoke sont présents; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.

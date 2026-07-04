@@ -1,0 +1,48 @@
+name: Responsive E2E Smoke
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Frontend URL to test
+        required: false
+        default: http://localhost:3000
+
+jobs:
+  responsive-smoke:
+    name: Responsive smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      TEST_BASE_URL: ${{ github.event.inputs.base_url || secrets.TEST_BASE_URL || 'http://localhost:3000' }}
+      E2E_AUTH_FILE: storageState/auth.json
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run responsive tests
+        run: npm run test:responsive
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
