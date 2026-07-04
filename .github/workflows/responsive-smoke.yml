@@ -36,6 +36,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Check frontend availability
+        run: |
+          echo "Checking frontend at ${TEST_BASE_URL}"
+          node -e "const url=process.env.TEST_BASE_URL; const controller=new AbortController(); const timer=setTimeout(()=>controller.abort(),5000); fetch(url,{signal:controller.signal}).then(r=>{clearTimeout(timer); if(!r.ok && r.status>=500){throw new Error('Frontend returned '+r.status)} console.log('Frontend reachable:', r.status);}).catch(err=>{clearTimeout(timer); console.error('Frontend is not reachable:', err.message); console.error('Set TEST_BASE_URL to a deployed frontend URL or run the app before executing responsive E2E.'); process.exit(1);});"
+
       - name: Run responsive tests
         run: npm run test:responsive
 
