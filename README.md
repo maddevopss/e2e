@@ -70,7 +70,7 @@ Ne jamais commiter `.env` ou un fichier de session réelle.
 Le fichier suivant prépare une session navigateur de test :
 
 ```text
-tests/auth.setup.js
+tests/auth-ui.setup.js
 ```
 
 Commande :
@@ -86,6 +86,17 @@ storageState/auth.json
 ```
 
 Ce fichier est local seulement et doit rester ignoré par Git.
+
+## Auth helper legacy
+
+`helpers/auth.js` est conservé pour compatibilité, mais il ne doit pas logger de courriel, de réponse API ou de jeton.
+
+Les nouveaux tests doivent privilégier :
+
+```text
+helpers/uiAuth.js
+tests/auth-ui.setup.js
+```
 
 ## Tests responsive mobile
 
@@ -121,4 +132,4 @@ Après génération du fichier `storageState/auth.json`, les tests responsive pe
 
 ## Statut
 
-Activation en cours. Le setup d’authentification optionnel est présent; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.
+Activation en cours. Le setup d’authentification silencieux est présent; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.
