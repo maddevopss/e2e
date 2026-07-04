@@ -40,7 +40,7 @@ playwright.config.js
 
 ```bash
 npm install
-npm test
+npm run test:auth
 npm run test:responsive
 npm run report
 ```
@@ -65,6 +65,28 @@ E2E_AUTH_FILE=storageState/auth.json
 
 Ne jamais commiter `.env` ou un fichier de session réelle.
 
+## Session de test authentifiée
+
+Le fichier suivant prépare une session navigateur de test :
+
+```text
+tests/auth.setup.js
+```
+
+Commande :
+
+```bash
+npm run test:auth
+```
+
+Cette commande crée le fichier défini par `E2E_AUTH_FILE`, par défaut :
+
+```text
+storageState/auth.json
+```
+
+Ce fichier est local seulement et doit rester ignoré par Git.
+
 ## Tests responsive mobile
 
 Le fichier principal est :
@@ -87,6 +109,8 @@ La règle anti-scroll horizontal minimale est :
 scrollWidth <= clientWidth + 2
 ```
 
+Après génération du fichier `storageState/auth.json`, les tests responsive peuvent accéder aux pages protégées si l’application accepte la session sauvegardée.
+
 ## Règles
 
 - Données de test seulement.
@@ -97,4 +121,4 @@ scrollWidth <= clientWidth + 2
 
 ## Statut
 
-Activation en cours. Priorité : connecter les tests responsive mobile aux parcours authentifiés et ajouter un rapport de validation après la prochaine passe mobile réelle.
+Activation en cours. Le setup d’authentification optionnel est présent; prochaine étape : exécuter localement `npm run test:auth`, puis `npm run test:responsive`, avec le frontend et le backend démarrés.
