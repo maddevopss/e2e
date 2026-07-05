@@ -47,6 +47,31 @@ npm run test:responsive
 npm run report
 ```
 
+## MADPROOF checks
+
+Avant de pousser une correction E2E, exécuter :
+
+```bash
+npm run guard:gitignore
+npm run guard:hygiene
+```
+
+Validation publique complète :
+
+```bash
+npm run check:e2e
+```
+
+Les guards bloquent notamment :
+
+- règles `.gitignore` critiques manquantes;
+- `.env` réel;
+- `storageState/*.json`;
+- `playwright-report/`;
+- `test-results/`.
+
+`storageState/auth.json` est un fichier local de session navigateur. Il ne doit jamais être commité.
+
 ## Environnement
 
 Copier `.env.example` vers `.env` au besoin.
@@ -135,34 +160,20 @@ Après génération du fichier `storageState/auth.json`, les tests responsive pe
 Le workflow suivant exécute les tests responsive :
 
 ```text
-.github/workflows/responsive-smoke.yml
+.github/workflows/ci.yml
 ```
 
-Déclencheurs :
+La CI publique exécute les tests responsive publics avec `TEST_BASE_URL`. La CI authentifiée s’active seulement si les secrets/variables E2E nécessaires sont configurés.
 
-- pull request vers `main`;
-- lancement manuel avec `workflow_dispatch`.
-
-La CI autonome :
-
-1. checkout le repo E2E;
-2. checkout le repo frontend;
-3. installe les dépendances;
-4. build le frontend;
-5. démarre `npm run preview` sur `127.0.0.1:3000`;
-6. vérifie la disponibilité du frontend;
-7. lance `npm run test:responsive`.
-
-Le rapport Playwright HTML et le log du frontend preview sont publiés comme artefacts pendant 7 jours.
+Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
 
 ## Règles
 
 - Données de test seulement.
-- Pas de fichiers de session réelle.
-- Pas de valeurs privées.
-- Tests stables et orientés parcours métier.
-- Les tests ne remplacent pas la QA mobile réelle sur iPhone / Safari.
+- Aucun secret réel.
+- Aucun fichier de session réelle commité.
+- Aucun rapport Playwright généré commité.
 
 ## Statut
 
-Activation en cours. Le setup d’authentification silencieux, le workflow responsive smoke autonome et la séparation routes publiques/protégées sont présents. Prochaine étape : ajouter un scénario authentifié complet avec backend de test.
+Actif. Priorités : garder les checks E2E verts, renforcer les parcours authentifiés et maintenir les tests mobiles comme garde anti-régression.
