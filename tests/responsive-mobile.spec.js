@@ -39,8 +39,12 @@ function resolveStorageState() {
   return fs.existsSync(absolutePath) ? absolutePath : undefined;
 }
 
-function hasStorageState() {
-  return Boolean(resolveStorageState());
+const storageState = resolveStorageState();
+const authRequired = process.env.E2E_AUTH_REQUIRED === '1';
+const runProtectedRoutes = process.env.E2E_RUN_PROTECTED !== '0';
+
+if (authRequired && !storageState) {
+  throw new Error('E2E_AUTH_REQUIRED=1 but no auth storage state was found. Run npm run test:auth first or set E2E_AUTH_FILE.');
 }
 
 async function assertResponsiveShell(page, label) {
@@ -53,7 +57,7 @@ for (const viewport of viewports) {
   test.describe(`responsive ${viewport.name} ${viewport.width}px`, () => {
     test.use({
       viewport: { width: viewport.width, height: viewport.height },
-      storageState: resolveStorageState()
+      storageState
     });
 
     for (const route of publicRoutes) {
@@ -63,15 +67,16 @@ for (const viewport of viewports) {
       });
     }
 
-    for (const route of protectedRoutes) {
-      test(`protected ${route.name} has safe responsive behavior`, async ({ page }) => {
-        await page.goto(route.path, { waitUntil: 'domcontentloaded' });
-        await assertResponsiveShell(page, `${route.name} @ ${viewport.width}px`);
+    if (runProtectedRoutes) {
+      for (const route of protectedRoutes) {
+        test(`protected ${route.name} has safe authenticated responsive behavior`, async ({ page }) => {
+          test.skip(!storageState, 'No auth storage state configured; protected responsive checks require authentication.');
 
-        if (!hasStorageState()) {
-          await expect(page).toHaveURL(/login|signin|auth/i);
-        }
-      });
+          await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+          await expect(page).not.toHaveURL(/login|signin|auth/i);
+          await assertResponsiveShell(page, `${route.name} @ ${viewport.width}px`);
+        });
+      }
     }
   });
 }
