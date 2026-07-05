@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "guard:gitignore": "node scripts/guard-gitignore-policy.js",
     "guard:hygiene": "node scripts/guard-repo-hygiene.js",
     "test": "playwright test",
     "test:public": "cross-env E2E_RUN_PROTECTED=0 playwright test tests/responsive-mobile.spec.js",
     "test:auth": "playwright test tests/auth-ui.setup.js",
     "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/responsive-mobile.spec.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
-    "check:e2e": "npm run guard:hygiene && npm run test:public",
+    "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run test:public",
     "report": "playwright show-report"
   },
   "devDependencies": {
