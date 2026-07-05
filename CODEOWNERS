@@ -1,0 +1,10 @@
+# MADSuite E2E ownership
+
+* @bleeband
+
+tests/ @bleeband
+helpers/ @bleeband
+playwright.config.js @bleeband
+.github/workflows/ @bleeband
+.github/dependabot.yml @bleeband
+scripts/ @bleeband
