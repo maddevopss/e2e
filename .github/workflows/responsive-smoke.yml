@@ -70,7 +70,7 @@ jobs:
 
       - name: Upload Playwright report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: e2e/playwright-report/
@@ -78,7 +78,7 @@ jobs:
 
       - name: Upload frontend preview log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: frontend-preview-log
           path: frontend-preview.log
