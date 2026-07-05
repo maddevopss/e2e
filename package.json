@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
-    "test:public": "E2E_RUN_PROTECTED=0 playwright test tests/responsive-mobile.spec.js",
+    "test:public": "cross-env E2E_RUN_PROTECTED=0 playwright test tests/responsive-mobile.spec.js",
     "test:auth": "playwright test tests/auth-ui.setup.js",
-    "test:authenticated": "npm run test:auth && E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/responsive-mobile.spec.js",
+    "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/responsive-mobile.spec.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
     "report": "playwright show-report"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.0"
   }
 }
