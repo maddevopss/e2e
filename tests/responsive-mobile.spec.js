@@ -42,16 +42,29 @@ function resolveStorageState() {
 const storageState = resolveStorageState();
 const authRequired = process.env.E2E_AUTH_REQUIRED === '1';
 const runProtectedRoutes = process.env.E2E_RUN_PROTECTED !== '0';
+const stubPublicApi = !runProtectedRoutes && process.env.E2E_STUB_PUBLIC_API !== '0';
 
 if (authRequired && !storageState) {
   throw new Error('E2E_AUTH_REQUIRED=1 but no auth storage state was found. Run npm run test:auth first or set E2E_AUTH_FILE.');
 }
 
 async function assertResponsiveShell(page, label) {
-  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => {});
   await assertCriticalContentVisible(page);
   await assertNoHorizontalScroll(page, label);
 }
+
+test.beforeEach(async ({ page }) => {
+  if (!stubPublicApi) return;
+
+  await page.route(/^https?:\/\/[^/]+\/api\//, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ success: false, message: 'E2E public API stub' })
+    })
+  );
+});
 
 for (const viewport of viewports) {
   test.describe(`responsive ${viewport.name} ${viewport.width}px`, () => {
