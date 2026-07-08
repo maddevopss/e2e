@@ -8,12 +8,12 @@ Dépôt officiel des tests end-to-end MADSuite.
 bleeband/SYSTEME_MAD
 ```
 
-Documents liés :
+Documents liés, à lire à la racine du dépôt `bleeband/SYSTEME_MAD` :
 
 ```text
-SYSTEME_MAD/09-CHECKLISTS/chk-033-validation-mobile-responsive-madsuite.md
-SYSTEME_MAD/05-PLAY/play-038-qa-mobile-reelle-madsuite.md
-SYSTEME_MAD/10-ROADMAP/madsuite-mobile-e2e-hardening-board.md
+09-CHECKLISTS/chk-033-validation-mobile-responsive-madsuite.md
+05-PLAY/play-038-qa-mobile-reelle-madsuite.md
+10-ROADMAP/madsuite-mobile-e2e-hardening-board.md
 ```
 
 ## Rôle
@@ -65,7 +65,7 @@ npm run check:e2e
 Les guards bloquent notamment :
 
 - règles `.gitignore` critiques manquantes;
-- `.env` réel;
+- fichier d’environnement réel;
 - `storageState/*.json`;
 - `playwright-report/`;
 - `test-results/`.
