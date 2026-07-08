@@ -21,34 +21,41 @@ jobs:
       TEST_BASE_URL: ${{ vars.E2E_BASE_URL || secrets.E2E_BASE_URL }}
 
     steps:
+      - name: Check public E2E configuration
+        id: public_config
+        run: |
+          if [ -z "$TEST_BASE_URL" ]; then
+            echo "Public E2E skipped: set E2E_BASE_URL as a repository variable or secret to enable external responsive checks."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout
+        if: steps.public_config.outputs.enabled == 'true'
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: steps.public_config.outputs.enabled == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
 
       - name: Install dependencies
+        if: steps.public_config.outputs.enabled == 'true'
         run: npm ci
 
       - name: Install Playwright browsers
+        if: steps.public_config.outputs.enabled == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Require E2E base URL
-        run: |
-          if [ -z "$TEST_BASE_URL" ]; then
-            echo "E2E_BASE_URL repository variable or secret is required."
-            echo "Example: https://madsuite.ca"
-            exit 1
-          fi
-
       - name: Run public responsive suite
+        if: steps.public_config.outputs.enabled == 'true'
         run: npm run test:public -- --project=chromium-desktop
 
       - name: Upload Playwright report
-        if: always()
+        if: always() && steps.public_config.outputs.enabled == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-public
