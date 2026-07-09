@@ -37,7 +37,7 @@ async function loginWithUi(page) {
   const data = credentials();
 
   if (!data.email || !data.pass) {
-    throw new Error('Missing E2E credentials. Set TEST_ADMIN_EMAIL and TEST_PASSWORD in .env.');
+    throw new Error('Missing E2E credentials. Set TEST_ADMIN_EMAIL/TEST_PASSWORD locally or E2E_ADMIN_EMAIL/E2E_PASSWORD in CI.');
   }
 
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
