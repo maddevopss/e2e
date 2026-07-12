@@ -8,7 +8,8 @@
     "test": "playwright test",
     "test:public": "node scripts/run-public-tests.js",
     "test:auth": "playwright test tests/auth-ui.setup.js",
-    "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/responsive-mobile.spec.js",
+    "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/authenticated-session.spec.js tests/responsive-mobile.spec.js",
+    "test:auth-smoke": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/authenticated-session.spec.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
     "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run test:public",
     "report": "playwright show-report"
