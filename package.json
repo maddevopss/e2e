@@ -7,7 +7,7 @@
     "guard:hygiene": "node scripts/guard-repo-hygiene.js",
     "test": "playwright test",
     "test:public": "node scripts/run-public-tests.js",
-    "test:auth": "playwright test tests/auth-ui.setup.js",
+    "test:auth": "playwright test tests/auth-ui.setup.spec.js --project=chromium-desktop",
     "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/responsive-mobile.spec.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
     "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run test:public",
