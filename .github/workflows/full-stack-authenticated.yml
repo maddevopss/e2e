@@ -43,8 +43,8 @@ jobs:
       DB_PORT: "5432"
       DB_NAME: madsuite_e2e_test
       TEST_DB_NAME: madsuite_e2e_test
-      JWT_SECRET: ci-only-jwt-secret-not-for-production
-      REFRESH_TOKEN_SECRET: ci-only-refresh-secret-not-for-production
+      JWT_SECRET: CI-MADSuite_2026!JwtSecret#FullStack
+      REFRESH_TOKEN_SECRET: CI-MADSuite_2026!RefreshSecret#FullStack
       FRONTEND_URL: http://127.0.0.1:3000
       VITE_API_URL: http://127.0.0.1:5000
       TEST_API_URL: http://127.0.0.1:5000/api
