@@ -12,6 +12,7 @@
     "test:auth-smoke": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/authenticated-session.spec.js",
     "test:responsive": "playwright test tests/responsive-mobile.spec.js",
     "test:critical": "playwright test tests/critical-flow.spec.js",
+    "test:critical:external": "cross-env E2E_EXTERNAL_SERVERS=1 playwright test tests/critical-flow.spec.js",
     "test:critical:full": "npm run test:critical -- --reporter=html,list",
     "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run test:public",
     "report": "playwright show-report"
