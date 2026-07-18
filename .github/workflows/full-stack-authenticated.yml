@@ -41,8 +41,10 @@ jobs:
       FRONTEND_URL: http://127.0.0.1:3000
       VITE_API_URL: http://127.0.0.1:5000
       TEST_API_URL: http://127.0.0.1:5000/api
+      TEST_BASE_URL: http://127.0.0.1:3000
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
       E2E_BASE_URL: http://127.0.0.1:3000
+      E2E_EXTERNAL_SERVERS: "1"
       PORT: "5000"
 
     steps:
@@ -75,7 +77,10 @@ jobs:
 
       - name: Installer les dépendances
         run: |
-          npm ci --prefix backend
+          # Le backend possède actuellement un conflit de peerDependencies ESLint
+          # (eslint-config-standard 17 attend eslint-plugin-n 15/16). Le drapeau
+          # reste limité à ce dépôt jusqu'à correction de son graphe de dépendances.
+          npm ci --legacy-peer-deps --prefix backend
           npm ci --prefix frontend
           npm ci --prefix e2e
           npx --prefix e2e playwright install --with-deps chromium
@@ -93,7 +98,7 @@ jobs:
       - name: Attendre le backend
         run: |
           for attempt in {1..60}; do
-            if curl --fail --silent http://127.0.0.1:5000/health >/dev/null || curl --fail --silent http://127.0.0.1:5000/api/health >/dev/null; then
+            if curl --fail --silent http://127.0.0.1:5000/health >/dev/null || curl --fail --silent http://127.0.0.1:5000/api/health >/dev/null || curl --fail --silent http://127.0.0.1:5000/api/system/health >/dev/null; then
               exit 0
             fi
             if ! kill -0 "$(cat backend.pid)" 2>/dev/null; then
