@@ -21,7 +21,7 @@ function queryScalar(sql) {
 
   return execFileSync(
     'psql',
-    [databaseUrl, '-v', 'ON_ERROR_STOP=1', '-At', '-c', sql],
+    [databaseUrl, '-v', 'ON_ERROR_STOP=1', '-qAt', '-c', sql],
     { encoding: 'utf8' }
   ).trim();
 }
