@@ -86,9 +86,6 @@ jobs:
 
       - name: Installer les dépendances
         run: |
-          # Le backend possède actuellement un conflit de peerDependencies ESLint
-          # (eslint-config-standard 17 attend eslint-plugin-n 15/16). Le drapeau
-          # reste limité à ce dépôt jusqu'à correction de son graphe de dépendances.
           npm ci --legacy-peer-deps --prefix backend
           npm ci --prefix frontend
           npm ci --prefix e2e
@@ -100,10 +97,10 @@ jobs:
           SKIP_MIGRATIONS: "0"
         run: npm run db:migrate
 
-      - name: Démarrer le backend
+      - name: Démarrer le backend HTTP minimal
         working-directory: backend
         run: |
-          nohup npm run start:test > ../backend.log 2>&1 &
+          nohup node -e "const app=require('./src/app'); const port=Number(process.env.PORT||5000); app.listen(port,'0.0.0.0',()=>console.log('Backend E2E HTTP prêt sur '+port));" > ../backend.log 2>&1 &
           echo $! > ../backend.pid
 
       - name: Attendre le backend
@@ -115,6 +112,10 @@ jobs:
             if ! kill -0 "$(cat backend.pid)" 2>/dev/null; then
               cat backend.log
               exit 1
+            fi
+            if (( attempt % 10 == 0 )); then
+              echo "Backend toujours en attente après $((attempt * 2)) secondes"
+              cat backend.log
             fi
             sleep 2
           done
