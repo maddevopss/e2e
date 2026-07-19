@@ -39,6 +39,17 @@ function stripeSignature(payload, timestamp = Math.floor(Date.now() / 1000)) {
   return `t=${timestamp},v1=${digest}`;
 }
 
+function extractAccessToken(body) {
+  return (
+    body?.data?.token ??
+    body?.data?.access_token ??
+    body?.data?.accessToken ??
+    body?.token ??
+    body?.access_token ??
+    body?.accessToken
+  );
+}
+
 async function signup(page, { organisation, user, email, password }) {
   await page.goto('/signup');
   await page.locator('[name="organisation_nom"]').fill(organisation);
@@ -52,10 +63,22 @@ async function signup(page, { organisation, user, email, password }) {
 
   await page.locator('button[type="submit"]').click();
   const response = await responsePromise;
-  const body = await response.text();
+  const bodyText = await response.text();
 
-  expect(response.ok(), `Inscription échouée: ${response.status()} ${body}`).toBeTruthy();
+  expect(response.ok(), `Inscription échouée: ${response.status()} ${bodyText}`).toBeTruthy();
+
+  let body;
+  try {
+    body = JSON.parse(bodyText);
+  } catch {
+    throw new Error('La réponse d’inscription doit être un JSON contenant un jeton d’accès.');
+  }
+
+  const token = extractAccessToken(body);
+  expect(token, 'La réponse d’inscription doit retourner un jeton d’accès réel').toBeTruthy();
+
   await expect(page).toHaveURL(/\/(onboarding|dashboard)(?:[/?#]|$)/i, { timeout: 15_000 });
+  return `Bearer ${token}`;
 }
 
 test.describe('Cycle financier P0', () => {
@@ -66,20 +89,12 @@ test.describe('Cycle financier P0', () => {
     const invoiceNumber = `INV-E2E-${Date.now()}`;
     const eventId = `evt_e2e_finance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-    await signup(page, {
+    const authorization = await signup(page, {
       organisation: organisationName,
       user: 'Administrateur Finance P0',
       email,
       password,
     });
-
-    const dashboardRequestPromise = page.waitForRequest((req) =>
-      req.method() === 'GET' && /\/api\/billing\/dashboard(?:[/?#]|$)/i.test(req.url())
-    );
-    await page.goto('/dashboard');
-    const dashboardRequest = await dashboardRequestPromise;
-    const authorization = dashboardRequest.headers().authorization;
-    expect(authorization, 'Le dashboard doit utiliser un jeton Authorization réel').toBeTruthy();
 
     const organisationId = queryScalar(`
       SELECT organisation_id
@@ -163,6 +178,7 @@ test.describe('Cycle financier P0', () => {
     expect(Number(dashboardBody.total_paid_this_month)).toBe(125);
     expect(Number(dashboardBody.overdue_total)).toBe(0);
 
+    await page.goto('/dashboard');
     await page.reload();
     await expect(page.locator('body')).toContainText(/125[,.]00|125\s*\$|\$\s*125/i);
   });
