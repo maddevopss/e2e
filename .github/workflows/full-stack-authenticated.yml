@@ -45,6 +45,7 @@ jobs:
       TEST_DB_NAME: madsuite_e2e_test
       JWT_SECRET: CI-MADSuite_2026!JwtSecret#FullStack
       REFRESH_TOKEN_SECRET: CI-MADSuite_2026!RefreshSecret#FullStack
+      STRIPE_WEBHOOK_SECRET: whsec_ci_madsuite_financial_p0
       FRONTEND_URL: http://127.0.0.1:3000
       VITE_API_URL: http://127.0.0.1:5000
       TEST_API_URL: http://127.0.0.1:5000/api
@@ -52,6 +53,7 @@ jobs:
       PLAYWRIGHT_BASE_URL: http://127.0.0.1:3000
       E2E_BASE_URL: http://127.0.0.1:3000
       E2E_EXTERNAL_SERVERS: "1"
+      SKIP_MIGRATIONS: "1"
       PORT: "5000"
 
     steps:
@@ -94,6 +96,8 @@ jobs:
 
       - name: Migrer la base de données
         working-directory: backend
+        env:
+          SKIP_MIGRATIONS: "0"
         run: npm run db:migrate
 
       - name: Démarrer le backend
@@ -143,6 +147,10 @@ jobs:
       - name: Exécuter le parcours critique authentifié
         working-directory: e2e
         run: npx playwright test tests/critical-flow.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
+
+      - name: Exécuter le cycle financier P0
+        working-directory: e2e
+        run: npx playwright test tests/financial-cycle-p0.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
 
       - name: Publier les preuves Playwright
         if: always()
