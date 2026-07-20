@@ -59,19 +59,19 @@ jobs:
 
     steps:
       - name: Checkout E2E
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: e2e
 
       - name: Checkout backend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: maddevopss/madsuite-backend
           ref: main
           path: backend
 
       - name: Checkout frontend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: maddevopss/madsuite-frontend
           ref: main
