@@ -45,6 +45,7 @@ jobs:
       TEST_DB_NAME: madsuite_e2e_test
       JWT_SECRET: CI-MADSuite_2026!JwtSecret#FullStack
       REFRESH_TOKEN_SECRET: CI-MADSuite_2026!RefreshSecret#FullStack
+      STRIPE_SECRET_KEY: sk_test_ci_madsuite_financial_p0
       STRIPE_WEBHOOK_SECRET: whsec_ci_madsuite_financial_p0
       FRONTEND_URL: http://127.0.0.1:3000
       VITE_API_URL: http://127.0.0.1:5000
