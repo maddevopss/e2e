@@ -218,13 +218,13 @@ test.describe('Critical authenticated flow', () => {
     // STEP 8: Logout Tenant A
     // ============================================
     console.log('Step 8: Logout Tenant A');
-    await page.goto('/dashboard');
-    
-    const logoutBtn = page.locator('button:has-text("Logout"), button:has-text("Déconnexion"), a:has-text("Logout")').first();
-    if (await logoutBtn.count()) {
-      await logoutBtn.click();
-      await page.waitForLoadState('networkidle').catch(() => {});
-    }
+    const logoutBtn = page.getByRole('button', { name: /Logout|Déconnexion/i }).first();
+    await expect(logoutBtn, 'Le bouton de déconnexion doit être visible avant de quitter la session').toBeVisible();
+
+    await Promise.all([
+      page.waitForURL(/\/(login|auth)(?:[/?#]|$)/i, { timeout: 10_000 }),
+      logoutBtn.click(),
+    ]);
 
     await expect(page).toHaveURL(/\/(login|auth)(?:[/?#]|$)/i);
     console.log('✓ Logout successful');
