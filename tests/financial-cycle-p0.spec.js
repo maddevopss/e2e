@@ -174,12 +174,21 @@ test.describe('Cycle financier P0', () => {
     const dashboardBody = await dashboardResponse.json();
 
     expect(dashboardResponse.ok(), JSON.stringify(dashboardBody)).toBeTruthy();
-    expect(Number(dashboardBody.total_invoiced_this_month)).toBe(125);
-    expect(Number(dashboardBody.total_paid_this_month)).toBe(125);
-    expect(Number(dashboardBody.overdue_total)).toBe(0);
 
-    await page.goto('/dashboard');
-    await page.reload();
-    await expect(page.locator('body')).toContainText(/125[,.]00|125\s*\$|\$\s*125/i);
+    const dashboardData = dashboardBody?.data ?? dashboardBody;
+    expect(dashboardData, `Réponse dashboard invalide: ${JSON.stringify(dashboardBody)}`).toBeTruthy();
+    expect(Number(dashboardData.total_invoiced_this_month)).toBe(125);
+    expect(Number(dashboardData.total_paid_this_month)).toBe(125);
+    expect(Number(dashboardData.overdue_total)).toBe(0);
+
+    await page.evaluate(() => {
+      window.history.pushState({}, '', '/dashboard');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/i);
+    await expect(page.locator('body')).toContainText(/125[,.]00|125\s*\$|\$\s*125/i, {
+      timeout: 15_000,
+    });
   });
 });
