@@ -67,8 +67,11 @@ test.describe('Critical authenticated flow', () => {
     console.log('✓ Tenant A onboarding completed');
 
     console.log('Step 2: Verify authenticated session survives reload');
+    await page.goto('/clients');
+    await expect(page).toHaveURL(/\/clients(?:[/?#]|$)/i, { timeout: 10_000 });
     await page.reload();
-    await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/i, { timeout: 10_000 });
+    await expect(page).toHaveURL(/\/clients(?:[/?#]|$)/i, { timeout: 10_000 });
+    await expect(page).not.toHaveURL(/\/(login|signup|onboarding)(?:[/?#]|$)/i);
     await expect(page.getByRole('button', { name: /Déconnexion|Logout/i })).toBeVisible();
     console.log('✓ Tenant A session persisted');
 
