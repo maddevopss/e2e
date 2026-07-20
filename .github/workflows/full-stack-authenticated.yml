@@ -171,6 +171,10 @@ jobs:
         working-directory: e2e
         run: npx playwright test tests/critical-flow.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
 
+      - name: Exécuter la preuve d'isolation multi-tenant P0
+        working-directory: e2e
+        run: npx playwright test tests/multi-tenant-isolation.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
+
       - name: Exécuter le cycle financier P0
         working-directory: e2e
         run: npx playwright test tests/financial-cycle-p0.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
