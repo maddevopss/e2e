@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: full-stack-authenticated-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   authenticated-flow:
@@ -67,12 +67,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: maddevopss/madsuite-backend
+          ref: main
           path: backend
 
       - name: Checkout frontend
         uses: actions/checkout@v4
         with:
           repository: maddevopss/madsuite-frontend
+          ref: main
           path: frontend
 
       - name: Setup Node.js
@@ -93,7 +95,23 @@ jobs:
           npm ci --legacy-peer-deps --prefix backend
           npm ci --prefix frontend
           npm ci --prefix e2e
-          npx --prefix e2e playwright install --with-deps chromium
+
+      - name: Installer Chromium Playwright avec reprise
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            echo "Installation Playwright — tentative ${attempt}/3"
+            if npx --prefix e2e playwright install --with-deps chromium; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 3 ]; then
+              echo "Échec de l'installation Playwright après 3 tentatives."
+              exit 1
+            fi
+
+            sleep $((attempt * 10))
+          done
 
       - name: Migrer la base de données
         working-directory: backend
