@@ -5,3 +5,4 @@ test-results/
 storageState/*.json
 .frontend-dev.*
 .DS_Store
+debug.log
