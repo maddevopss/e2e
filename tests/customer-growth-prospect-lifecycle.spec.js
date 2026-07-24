@@ -99,6 +99,7 @@ test.describe('Parcours commercial prospect vers client', () => {
     expect(activity.task_status).toBe('pending');
 
     await apiRequest(contextA, authorizationA, 'PATCH', `/customer-growth/activities/${activity.id}`, {
+      activity_type: 'task',
       task_status: 'completed',
     });
     await apiRequest(contextA, authorizationA, 'PATCH', `/customer-growth/leads/${lead.id}`, {
