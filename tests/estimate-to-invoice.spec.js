@@ -8,6 +8,7 @@ const {
 } = require('./helpers/auth');
 const { queryScalar } = require('./helpers/finance');
 
+// Preuve explicite du contrat idempotent de conversion soumission → facture.
 test.describe('Parcours soumission vers facture', () => {
   test('accepte et convertit une soumission sans doublon ni fuite entre organisations', async ({ browser }) => {
     const password = 'TestPassword123!';
