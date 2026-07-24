@@ -57,11 +57,21 @@ test.describe('Cycle complet de revenus', () => {
     expect(Number(estimate.total)).toBe(1000);
 
     await apiRequest(contextA, authorizationA, 'PATCH', `/estimates/${estimate.id}`, { status: 'accepted' });
-    const invoiceConversion = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`);
+    const invoiceKey = `revenue-estimate-${estimate.id}-invoice`;
+    const invoiceConversion = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`, {
+      idempotency_key: invoiceKey,
+    });
     expect(invoiceConversion.response.status()).toBe(201);
     const invoice = entity(invoiceConversion.body, 'invoice');
     expect(invoice.id).toBeTruthy();
     expect(Number(invoice.total)).toBe(1000);
+
+    const invoiceReplay = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`, {
+      idempotency_key: invoiceKey,
+    });
+    expect(invoiceReplay.response.status()).toBe(200);
+    expect(entity(invoiceReplay.body, 'invoice').id).toBe(invoice.id);
+    expect(queryScalar(`SELECT COUNT(*) FROM invoices WHERE estimate_id = ${estimate.id}`)).toBe('1');
 
     const organisationId = queryScalar(`
       SELECT organisation_id FROM utilisateurs
