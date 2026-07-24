@@ -89,9 +89,6 @@ jobs:
 
       - name: Installer les dépendances
         run: |
-          # Le backend possède actuellement un conflit de peerDependencies ESLint
-          # (eslint-config-standard 17 attend eslint-plugin-n 15/16). Le drapeau
-          # reste limité à ce dépôt jusqu'à correction de son graphe de dépendances.
           npm ci --legacy-peer-deps --prefix backend
           npm ci --prefix frontend
           npm ci --prefix e2e
@@ -104,12 +101,10 @@ jobs:
             if npx --prefix e2e playwright install --with-deps chromium; then
               exit 0
             fi
-
             if [ "$attempt" -eq 3 ]; then
               echo "Échec de l'installation Playwright après 3 tentatives."
               exit 1
             fi
-
             sleep $((attempt * 10))
           done
 
@@ -174,6 +169,10 @@ jobs:
       - name: Exécuter la preuve d'isolation multi-tenant P0
         working-directory: e2e
         run: npx playwright test tests/multi-tenant-isolation.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
+
+      - name: Exécuter le parcours commercial prospect vers client
+        working-directory: e2e
+        run: npx playwright test tests/customer-growth-prospect-lifecycle.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
 
       - name: Exécuter le cycle financier P0
         working-directory: e2e
