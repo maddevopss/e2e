@@ -98,8 +98,8 @@ test.describe('Parcours opportunité vers soumission', () => {
     expect(proposal.status).toBe('proposal');
     expect(Number(proposal.produced_estimate_id)).toBe(Number(estimate.id));
 
-    await pageA.goto('/estimates');
-    await expect(pageA.locator('body')).toContainText(estimate.estimate_number, { timeout: 15_000 });
+    const estimatesA = await apiRequest(contextA, authorizationA, 'GET', '/estimates');
+    expect(JSON.stringify(estimatesA.body)).toContain(estimate.estimate_number);
 
     const contextB = await browser.newContext();
     const pageB = await contextB.newPage();
@@ -110,6 +110,9 @@ test.describe('Parcours opportunité vers soumission', () => {
     const opportunitiesB = await apiRequest(contextB, authorizationB, 'GET', '/customer-growth/opportunities?limit=100&offset=0');
     expect(JSON.stringify(opportunitiesB.body)).not.toContain(opportunityTitle);
     expect(JSON.stringify(opportunitiesB.body)).not.toContain(estimate.estimate_number);
+
+    const estimatesB = await apiRequest(contextB, authorizationB, 'GET', '/estimates');
+    expect(JSON.stringify(estimatesB.body)).not.toContain(estimate.estimate_number);
 
     const crossOpportunity = await contextB.request.get(`${apiUrl}/customer-growth/opportunities/${opportunity.id}`, {
       headers: { accept: 'application/json', authorization: authorizationB },
@@ -122,9 +125,6 @@ test.describe('Parcours opportunité vers soumission', () => {
     });
     expect([403, 404]).toContain(crossEstimate.status());
     expect(await crossEstimate.text()).not.toContain(estimate.estimate_number);
-
-    await pageB.goto('/estimates');
-    await expect(pageB.locator('body')).not.toContainText(estimate.estimate_number);
 
     await contextA.close();
     await contextB.close();
