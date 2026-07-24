@@ -45,10 +45,9 @@ test.describe('Dépenses V1', () => {
     await expect(pageA.getByText(supplier, { exact: true })).toBeVisible();
     await expect(pageA.getByText('114,98 $')).toBeVisible();
 
-    await pageA.getByLabel('Fournisseur').first().fill(updatedSupplier);
     await pageA.getByRole('button', { name: 'Modifier' }).click();
     await expect(pageA.getByRole('heading', { name: 'Modifier la dépense' })).toBeVisible();
-    await pageA.getByLabel('Fournisseur').last().fill(updatedSupplier);
+    await pageA.locator('#expense-supplier').fill(updatedSupplier);
     await pageA.getByRole('button', { name: 'Enregistrer les changements' }).click();
     await expect(pageA.getByText(updatedSupplier, { exact: true })).toBeVisible();
 
@@ -71,7 +70,7 @@ test.describe('Dépenses V1', () => {
     await pageA.reload();
     await expect(pageA.getByText(receiptName)).toBeVisible();
 
-    await pageA.getByLabel('Fournisseur').first().fill(updatedSupplier);
+    await pageA.locator('#expense-supplier-filter').fill(updatedSupplier);
     await expect(pageA.getByText(updatedSupplier, { exact: true })).toBeVisible();
     await expect(pageA.getByText('114,98 $')).toBeVisible();
     await expect(pageA.getByText('14,98 $')).toBeVisible();
