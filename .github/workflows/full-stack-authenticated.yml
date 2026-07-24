@@ -174,6 +174,10 @@ jobs:
         working-directory: e2e
         run: npx playwright test tests/customer-growth-prospect-lifecycle.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
 
+      - name: Exécuter le parcours opportunité vers soumission
+        working-directory: e2e
+        run: npx playwright test tests/customer-growth-opportunity-estimate.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
+
       - name: Exécuter le cycle financier P0
         working-directory: e2e
         run: npx playwright test tests/financial-cycle-p0.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
