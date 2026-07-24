@@ -6,9 +6,10 @@ const {
   signup,
   unique,
 } = require('./helpers/auth');
+const { queryScalar } = require('./helpers/finance');
 
 test.describe('Parcours soumission vers facture', () => {
-  test('accepte et convertit une soumission sans fuite entre organisations', async ({ browser }) => {
+  test('accepte et convertit une soumission sans doublon ni fuite entre organisations', async ({ browser }) => {
     const password = 'TestPassword123!';
     const clientName = unique('Client-soumission-A');
     const itemDescription = unique('Service-conseil-A');
@@ -48,12 +49,24 @@ test.describe('Parcours soumission vers facture', () => {
     });
     expect(entity(accepted.body, 'estimate').status).toBe('accepted');
 
-    const conversion = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`);
+    const idempotencyKey = `e2e-estimate-${estimate.id}-invoice`;
+    const conversion = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`, {
+      idempotency_key: idempotencyKey,
+    });
     expect(conversion.response.status()).toBe(201);
     const invoice = entity(conversion.body, 'invoice');
     expect(invoice.id).toBeTruthy();
     expect(invoice.invoice_number).toBeTruthy();
     expect(Number(invoice.total)).toBe(1250);
+
+    const replay = await apiRequest(contextA, authorizationA, 'POST', `/estimates/${estimate.id}/convert`, {
+      idempotency_key: idempotencyKey,
+    });
+    expect(replay.response.status()).toBe(200);
+    expect(entity(replay.body, 'invoice').id).toBe(invoice.id);
+
+    expect(queryScalar(`SELECT COUNT(*) FROM invoices WHERE estimate_id = ${estimate.id}`)).toBe('1');
+    expect(queryScalar(`SELECT COUNT(*) FROM invoice_items WHERE invoice_id = ${invoice.id}`)).toBe('1');
 
     const refreshedEstimate = await apiRequest(contextA, authorizationA, 'GET', `/estimates/${estimate.id}`);
     const invoicedEstimate = entity(refreshedEstimate.body, 'estimate');
