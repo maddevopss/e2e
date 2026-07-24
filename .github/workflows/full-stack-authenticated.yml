@@ -162,37 +162,21 @@ jobs:
           echo "Le frontend n'est pas devenu prêt."
           exit 1
 
-      - name: Exécuter le parcours critique authentifié
+      - name: Exécuter toutes les preuves full-stack
         working-directory: e2e
-        run: npx playwright test tests/critical-flow.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter la preuve d'isolation multi-tenant P0
-        working-directory: e2e
-        run: npx playwright test tests/multi-tenant-isolation.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter le parcours commercial prospect vers client
-        working-directory: e2e
-        run: npx playwright test tests/customer-growth-prospect-lifecycle.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter le parcours opportunité vers soumission
-        working-directory: e2e
-        run: npx playwright test tests/customer-growth-opportunity-estimate.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter le parcours soumission vers facture
-        working-directory: e2e
-        run: npx playwright test tests/estimate-to-invoice.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Vérifier la stabilité de l'onboarding E2E
-        working-directory: e2e
-        run: npx playwright test tests/onboarding-session-stability.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter le cycle complet de revenus
-        working-directory: e2e
-        run: npx playwright test tests/revenue-lifecycle.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
-
-      - name: Exécuter le cycle financier P0
-        working-directory: e2e
-        run: npx playwright test tests/financial-cycle-p0.spec.js --project=chromium-desktop --workers=1 --reporter=html,list
+        run: |
+          npx playwright test \
+            tests/critical-flow.spec.js \
+            tests/multi-tenant-isolation.spec.js \
+            tests/customer-growth-prospect-lifecycle.spec.js \
+            tests/customer-growth-opportunity-estimate.spec.js \
+            tests/estimate-to-invoice.spec.js \
+            tests/onboarding-session-stability.spec.js \
+            tests/revenue-lifecycle.spec.js \
+            tests/financial-cycle-p0.spec.js \
+            --project=chromium-desktop \
+            --workers=1 \
+            --reporter=html,list
 
       - name: Publier les preuves Playwright
         if: always()
