@@ -2,8 +2,8 @@ const { test, expect } = require('@playwright/test');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
-test.describe('Critical authenticated flow', () => {
-  test('signup → onboarding → persistent session → logout → multi-tenant isolation', async ({ page, browser }) => {
+test.describe('Parcours authentifié critique', () => {
+  test('inscription → onboarding → session persistante → déconnexion → isolation multi-tenant', async ({ page, browser }) => {
     const password = 'TestPassword123!';
     const tenantA = {
       organisation: unique('Organisation-A'),
