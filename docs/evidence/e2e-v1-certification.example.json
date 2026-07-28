@@ -1,0 +1,25 @@
+{
+  "environment": "staging-isolated",
+  "approvedBy": "replace-with-human-approver",
+  "sourceCommits": {
+    "backend": "replace-with-backend-sha",
+    "frontend": "replace-with-frontend-sha",
+    "desktopAgent": "replace-with-desktop-agent-sha",
+    "e2e": "replace-with-e2e-sha"
+  },
+  "suites": {
+    "authentication": "passed",
+    "multi_organisation_isolation": "passed",
+    "clients_projects_time": "passed",
+    "quotes_invoices_payments": "passed",
+    "accounting": "passed",
+    "payroll": "passed",
+    "inventory": "passed",
+    "suppliers_procurement": "passed",
+    "decision_dashboard": "passed",
+    "public_portals": "passed",
+    "frontend_responsive_accessibility": "passed",
+    "desktop_agent_contract": "passed",
+    "recovery_and_observability": "passed"
+  }
+}
