@@ -19,7 +19,7 @@
     "report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.0",
+    "@playwright/test": "^1.62.0",
     "cross-env": "^10.1.0",
     "dotenv": "^17.2.0"
   }
