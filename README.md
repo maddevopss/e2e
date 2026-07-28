@@ -1,6 +1,6 @@
 # MADSuite E2E
 
-Dépôt officiel des tests end-to-end MADSuite.
+Dépôt officiel des tests de bout en bout de MADSuite.
 
 ## Source de vérité
 
@@ -19,6 +19,20 @@ Documents liés, à lire à la racine du dépôt `bleeband/SYSTEME_MAD` :
 ## Rôle
 
 Ce dépôt valide les parcours critiques MADSuite : authentification, onboarding, clients, projets, temps, factures, estimés, portail, modules, isolation organisation et régressions responsive mobile.
+
+## État de fondation V1
+
+La certification E2E V1 est fusionnée. Le dépôt contient maintenant un contrat de certification, une matrice de parcours et un registre de preuves permettant de constater la couverture globale sans confondre une validation automatisée avec une garantie absolue d’absence de défaut.
+
+La fermeture V1 couvre notamment :
+
+- les parcours publics et authentifiés;
+- le cycle client, projet, temps et facturation;
+- l’isolation entre organisations, y compris les refus d’accès croisé;
+- les principaux formats desktop et mobile;
+- la traçabilité des résultats et des limites connues.
+
+Les nouveaux parcours métier doivent être ajoutés à la matrice E2E lorsqu’ils deviennent critiques ou lorsqu’ils relient plusieurs grands modules.
 
 ## Stack
 
@@ -97,7 +111,7 @@ E2E_ADMIN_EMAIL=test-admin@example.com
 E2E_PASSWORD=change-me
 ```
 
-`helpers/uiAuth.js` accepte `TEST_ADMIN_EMAIL` / `TEST_PASSWORD`, puis `E2E_ADMIN_EMAIL` / `E2E_PASSWORD`, puis les alias utilisateur legacy `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`.
+`helpers/uiAuth.js` accepte `TEST_ADMIN_EMAIL` / `TEST_PASSWORD`, puis `E2E_ADMIN_EMAIL` / `E2E_PASSWORD`, puis les alias utilisateur historiques `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`.
 
 Ne jamais commiter `.env` ou un fichier de session réelle.
 
@@ -123,9 +137,9 @@ storageState/auth.json
 
 Ce fichier est local seulement et doit rester ignoré par Git.
 
-## Auth helper legacy
+## Auth helper historique
 
-`helpers/auth.js` est conservé pour compatibilité, mais il ne doit pas logger de courriel, de réponse API ou de jeton.
+`helpers/auth.js` est conservé pour compatibilité, mais il ne doit pas journaliser de courriel, de réponse API ou de jeton.
 
 Les nouveaux tests doivent privilégier :
 
@@ -150,17 +164,17 @@ Il vérifie les routes principales sur les largeurs :
 - 768 px
 - 1440 px
 
-La règle anti-scroll horizontal minimale est :
+La règle anti-défilement horizontal minimale est :
 
 ```javascript
 scrollWidth <= clientWidth + 2
 ```
 
-Les routes sont séparées en deux intentions :
+Les routes sont séparées en trois intentions :
 
-- routes publiques : elles doivent rendre du contenu visible sans overflow horizontal;
-- routes protégées sans session : elles doivent garder un shell responsive sûr et rediriger vers login/auth;
-- routes protégées avec `storageState/auth.json` : elles peuvent valider les vraies pages applicatives.
+- routes publiques : elles doivent rendre du contenu visible sans débordement horizontal;
+- routes protégées sans session : elles doivent garder une structure responsive sûre et rediriger vers l’authentification;
+- routes protégées avec `storageState/auth.json` : elles valident les vraies pages applicatives.
 
 Après génération du fichier `storageState/auth.json`, les tests responsive peuvent accéder aux pages protégées si l’application accepte la session sauvegardée.
 
@@ -172,7 +186,7 @@ Le workflow suivant exécute les tests responsive :
 .github/workflows/ci.yml
 ```
 
-La CI publique exécute les tests responsive publics avec `TEST_BASE_URL`. La CI authentifiée s’active seulement si les secrets/variables E2E nécessaires sont configurés.
+La CI publique exécute les tests responsive publics avec `TEST_BASE_URL`. La CI authentifiée s’active seulement si les secrets ou variables E2E nécessaires sont configurés.
 
 Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
 
@@ -185,4 +199,4 @@ Le rapport Playwright HTML est publié comme artefact pendant 7 jours.
 
 ## Statut
 
-Actif. Priorités : garder les checks E2E verts, renforcer les parcours authentifiés et maintenir les tests mobiles comme garde anti-régression.
+Fondation et certification E2E V1 fusionnées. Le dépôt est en évolution continue : maintien des parcours critiques, couverture des intégrations entre grands modules et prévention des régressions multi-organisation et responsive.
