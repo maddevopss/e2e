@@ -17,6 +17,7 @@
     "test:critical:full": "npm run test:critical -- --reporter=html,list",
     "test:accounting-closure": "playwright test tests/accounting-closure.spec.js --workers=1",
     "test:accounting-remediation": "playwright test tests/accounting-remediation.spec.js --workers=1",
+    "test:accounting-reversal": "playwright test tests/accounting-controlled-reversal.spec.js --workers=1",
     "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run guard:accounting-closure && npm run test:public",
     "report": "playwright show-report"
   },
