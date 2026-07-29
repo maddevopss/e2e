@@ -7,6 +7,7 @@
     "guard:hygiene": "node scripts/guard-repo-hygiene.js",
     "guard:accounting-closure": "node scripts/guard-accounting-closure-contract.js",
     "guard:payroll-closure": "node scripts/guard-payroll-closure-contract.js",
+    "guard:cognitive-mad-foundations-closure": "node scripts/guard-cognitive-mad-foundations-closure-contract.js",
     "test": "playwright test",
     "test:public": "node scripts/run-public-tests.js",
     "test:auth": "playwright test tests/auth-ui.setup.js",
@@ -21,7 +22,8 @@
     "test:accounting-reversal": "playwright test tests/accounting-controlled-reversal.spec.js --workers=1",
     "test:accounting-period-lock": "playwright test tests/accounting-period-lock.spec.js --workers=1",
     "test:payroll-closure": "playwright test tests/payroll-closure.spec.js --workers=1",
-    "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run guard:accounting-closure && npm run guard:payroll-closure && npm run test:public",
+    "test:cognitive-mad-foundations-closure": "playwright test tests/cognitive-mad-foundations-closure.spec.js --workers=1",
+    "check:e2e": "npm run guard:gitignore && npm run guard:hygiene && npm run guard:accounting-closure && npm run guard:payroll-closure && npm run guard:cognitive-mad-foundations-closure && npm run test:public",
     "report": "playwright show-report"
   },
   "devDependencies": {
