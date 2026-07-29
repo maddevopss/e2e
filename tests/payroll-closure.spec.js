@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 const enabled = process.env.E2E_PAYROLL_CLOSURE === '1';
 
 (enabled ? test.describe : test.describe.skip)('Fermeture du module Paie', () => {
-  test('cycle complet, documents, comptabilité et isolation multi-organisation', async ({ request }) => {
+  test('cycle complet, opérations avancées et isolation multi-organisation', async ({ request }) => {
     const baseURL = process.env.E2E_API_URL;
     const tokenA = process.env.E2E_PAYROLL_TOKEN_A;
     const tokenB = process.env.E2E_PAYROLL_TOKEN_B;
@@ -14,21 +14,30 @@ const enabled = process.env.E2E_PAYROLL_CLOSURE === '1';
 
     const headersA = { Authorization: `Bearer ${tokenA}` };
     const headersB = { Authorization: `Bearer ${tokenB}` };
+    const paths = [
+      '/api/payroll/employees',
+      '/api/payroll/periods',
+      '/api/payroll/runs',
+      '/api/payroll/remittances',
+      '/api/payroll/remittances/deposits',
+      '/api/payroll/remittances/vacations',
+      '/api/payroll/remittances/terminations',
+      '/api/payroll/remittances/year-end-slips',
+      '/api/payroll/remittances/reconciliation',
+    ];
 
-    const employees = await request.get(`${baseURL}/api/payroll/employees`, { headers: headersA });
-    expect(employees.ok()).toBeTruthy();
+    for (const path of paths) {
+      const response = await request.get(`${baseURL}${path}`, { headers: headersA });
+      expect(response.ok(), `${path} doit être accessible`).toBeTruthy();
+    }
 
-    const periods = await request.get(`${baseURL}/api/payroll/periods`, { headers: headersA });
-    expect(periods.ok()).toBeTruthy();
+    const runsA = await request.get(`${baseURL}/api/payroll/runs`, { headers: headersA });
+    const runsB = await request.get(`${baseURL}/api/payroll/runs`, { headers: headersB });
+    expect(runsA.ok()).toBeTruthy();
+    expect(runsB.ok()).toBeTruthy();
 
-    const runs = await request.get(`${baseURL}/api/payroll/runs`, { headers: headersA });
-    expect(runs.ok()).toBeTruthy();
-
-    const tenantBRuns = await request.get(`${baseURL}/api/payroll/runs`, { headers: headersB });
-    expect(tenantBRuns.ok()).toBeTruthy();
-
-    const bodyA = await runs.json();
-    const bodyB = await tenantBRuns.json();
+    const bodyA = await runsA.json();
+    const bodyB = await runsB.json();
     const idsA = new Set((bodyA.runs || []).map((run) => String(run.id)));
     expect((bodyB.runs || []).some((run) => idsA.has(String(run.id)))).toBeFalsy();
   });
