@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 
 test.describe('Isolation multi-tenant P0', () => {
   test('B ne peut ni voir ni lire directement le client de A', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const clientNameA = unique('Client-tenant-A');
     const clientEmailA = `${unique('client-a')}@example.com`;
 

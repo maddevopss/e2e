@@ -9,6 +9,7 @@
     "guard:payroll-closure": "node scripts/guard-payroll-closure-contract.js",
     "guard:cognitive-mad-foundations-closure": "node scripts/guard-cognitive-mad-foundations-closure-contract.js",
     "test": "playwright test",
+    "test:contracts": "node ../node_modules/jest/bin/jest.js --config jest.config.js",
     "test:public": "node scripts/run-public-tests.js",
     "test:auth": "playwright test tests/auth-ui.setup.js",
     "test:authenticated": "npm run test:auth && cross-env E2E_AUTH_REQUIRED=1 E2E_AUTH_FILE=storageState/auth.json playwright test tests/authenticated-session.spec.js tests/responsive-mobile.spec.js",

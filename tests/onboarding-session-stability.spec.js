@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { signup, unique } = require('./helpers/auth');
 
 test.describe('Stabilité onboarding E2E', () => {
@@ -9,7 +10,7 @@ test.describe('Stabilité onboarding E2E', () => {
       organisation,
       user: 'Administrateur Onboarding E2E',
       email: `${unique('onboarding-admin')}@example.com`,
-      password: 'TestPassword123!',
+      password: makeTestPassword(),
     });
 
     await page.goto('/dashboard');

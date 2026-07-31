@@ -63,18 +63,39 @@ jobs:
         with:
           path: e2e
 
+      - name: RÃ©soudre les branches applicatives
+        id: refs
+        shell: bash
+        run: |
+          candidate="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+          backend_ref="main"
+          frontend_ref="main"
+
+          if git ls-remote --exit-code --heads https://github.com/maddevopss/madsuite-backend.git "${candidate}" >/dev/null 2>&1; then
+            backend_ref="${candidate}"
+          fi
+
+          if git ls-remote --exit-code --heads https://github.com/maddevopss/madsuite-frontend.git "${candidate}" >/dev/null 2>&1; then
+            frontend_ref="${candidate}"
+          fi
+
+          echo "backend_ref=${backend_ref}" >> "$GITHUB_OUTPUT"
+          echo "frontend_ref=${frontend_ref}" >> "$GITHUB_OUTPUT"
+          echo "Backend ref: ${backend_ref}"
+          echo "Frontend ref: ${frontend_ref}"
+
       - name: Checkout backend
         uses: actions/checkout@v7
         with:
           repository: maddevopss/madsuite-backend
-          ref: main
+          ref: ${{ steps.refs.outputs.backend_ref }}
           path: backend
 
       - name: Checkout frontend
         uses: actions/checkout@v7
         with:
           repository: maddevopss/madsuite-frontend
-          ref: main
+          ref: ${{ steps.refs.outputs.frontend_ref }}
           path: frontend
 
       - name: Setup Node.js

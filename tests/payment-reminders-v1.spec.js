@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral } = require('./helpers/finance');
 
 test.describe('Relances de paiement V1', () => {
   test('J+3 est idempotent, livré, isolé et arrêté après paiement', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('reminders-a')}@example.com`;
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();

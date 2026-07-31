@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiRequest, entity, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral } = require('./helpers/finance');
 
 test.describe('Facturation depuis les heures V1', () => {
   test('prévisualise, facture une seule fois et isole les organisations', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('time-invoice-a')}@example.com`;
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();

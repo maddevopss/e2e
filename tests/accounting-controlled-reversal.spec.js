@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
@@ -32,7 +33,7 @@ test.describe('Renversement comptable contrôlé', () => {
       organisation: unique('Renversement-comptable'),
       user: 'Responsable comptable E2E',
       email: `${unique('accounting-reversal')}@example.com`,
-      password: 'TestPassword123!',
+      password: makeTestPassword(),
     });
 
     const access = await captureAccountingAccess(page);

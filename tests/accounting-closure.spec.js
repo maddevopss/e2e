@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
@@ -28,7 +29,7 @@ async function api(request, access, path, options = {}) {
 
 test.describe('Fermeture du module Comptabilité', () => {
   test('cycle complet, rapports, exports, gouvernance et isolation multi-organisation', async ({ page, browser, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const tenantA = {
       organisation: unique('Comptabilite-A'),
       user: 'Administrateur comptable A',

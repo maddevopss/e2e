@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, signup, unique } = require('./helpers/auth');
 
 const modules = [
@@ -24,7 +25,7 @@ test.describe('Contrats des nouveaux modules métier', () => {
       organisation: unique('Organisation-modules-metier'),
       user: 'Administrateur Modules Métier',
       email: `${unique('modules-metier')}@example.com`,
-      password: 'TestPassword123!',
+      password: makeTestPassword(),
     });
 
     for (const module of modules) {

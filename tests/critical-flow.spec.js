@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
 test.describe('Parcours authentifié critique', () => {
   test('inscription → onboarding → session persistante → déconnexion → isolation multi-tenant', async ({ page, browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const tenantA = {
       organisation: unique('Organisation-A'),
       user: 'Utilisateur Test A',

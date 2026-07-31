@@ -1,4 +1,5 @@
 const { test, expect } = require("@playwright/test");
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiLogin, getToken } = require("./helpers/auth");
 
 async function login(page, email, password) {
@@ -27,7 +28,7 @@ test("employé peut se connecter mais ne voit pas Admin", async ({ page, request
   const adminToken = await getToken(page);
 
   const email = `employe.e2e.${Date.now()}@test.local`;
-  const password = "Password123!";
+  const password = makeTestPassword();
 
   const userRes = await request.post("http://localhost:5000/api/users", {
     headers: {

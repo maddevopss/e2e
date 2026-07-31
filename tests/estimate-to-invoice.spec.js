@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const {
   apiUrl,
   apiRequest,
@@ -11,7 +12,7 @@ const { queryScalar } = require('./helpers/finance');
 // Preuve explicite du contrat idempotent de conversion soumission → facture.
 test.describe('Parcours soumission vers facture', () => {
   test('accepte et convertit une soumission sans doublon ni fuite entre organisations', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const clientName = unique('Client-soumission-A');
     const itemDescription = unique('Service-conseil-A');
 
