@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral } = require('./helpers/finance');
 
@@ -23,7 +24,7 @@ async function get(request, path, authorization) {
 
 test.describe('Cycle fournisseurs complet', () => {
   test('dossier → conformité → rapprochement → approbation → paiement → performance → isolation', async ({ page, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('supplier-a')}@example.com`;
     const emailB = `${unique('supplier-b')}@example.com`;
     const authA = await signup(page, { organisation: unique('Organisation fournisseurs A'), user: 'Admin fournisseurs A', email: emailA, password });

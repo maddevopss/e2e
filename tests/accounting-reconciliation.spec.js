@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
@@ -23,7 +24,7 @@ async function getReconciliation(request, access) {
 
 test.describe('Rapprochement comptable', () => {
   test('diagnostic accessible et isolé entre deux organisations', async ({ page, browser, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
 
     await signupAndCompleteOnboardingUi(page, {
       organisation: unique('Rapprochement-A'),

@@ -1,11 +1,12 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral, stripeSignature } = require('./helpers/finance');
 
 test.describe('Cycle financier P0', () => {
   test('facture → webhook signé → ledger → dashboard → rejeu sans doublon', async ({ page, request }) => {
     const email = `${unique('finance-p0')}@example.com`;
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const organisationName = unique('Organisation-finance-P0');
     const invoiceNumber = `INV-E2E-${Date.now()}`;
     const eventId = `evt_e2e_finance_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;

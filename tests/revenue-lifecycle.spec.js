@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral, stripeSignature } = require('./helpers/finance');
 
 test.describe('Cycle complet de revenus', () => {
   test('prospect → client → opportunité → soumission → facture → paiement', async ({ browser, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('revenue-admin-a')}@example.com`;
     const prospectName = unique('Prospect-revenu');
     const companyName = unique('Entreprise-revenu');

@@ -109,6 +109,7 @@ Alias CI supportés pour l’authentification :
 ```text
 E2E_ADMIN_EMAIL=test-admin@example.com
 E2E_PASSWORD=change-me
+E2E_SIGNUP_PASSWORD=
 ```
 
 `helpers/uiAuth.js` accepte `TEST_ADMIN_EMAIL` / `TEST_PASSWORD`, puis `E2E_ADMIN_EMAIL` / `E2E_PASSWORD`, puis les alias utilisateur historiques `TEST_USER_EMAIL` / `TEST_USER_PASSWORD`.

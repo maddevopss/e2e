@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const {
   apiUrl,
   apiRequest,
@@ -9,7 +10,7 @@ const {
 
 test.describe('Parcours opportunité vers soumission', () => {
   test('qualifie et convertit une opportunité sans doublon ni fuite entre organisations', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const clientName = unique('Client-opportunite-A');
     const opportunityTitle = unique('Refonte-portail-A');
 

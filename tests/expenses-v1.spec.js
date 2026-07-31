@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 
 function authHeaders(authorization, extra = {}) {
@@ -7,7 +8,7 @@ function authHeaders(authorization, extra = {}) {
 
 test.describe('Dépenses V1', () => {
   test('création, filtres, preuve privée, modification, suppression et isolation', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const supplier = unique('Fournisseur-depense');
     const updatedSupplier = `${supplier}-modifie`;
     const receiptName = 'preuve-achat.png';

@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral } = require('./helpers/finance');
 
@@ -23,7 +24,7 @@ async function get(request, authorization, path) {
 
 test.describe('Inventaire — fermeture complète', () => {
   test('réception → réservation → comptage → achat → lot → valorisation → isolation', async ({ page, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('inventory-a')}@example.com`;
     const emailB = `${unique('inventory-b')}@example.com`;
 

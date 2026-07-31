@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral } = require('./helpers/finance');
 
 test.describe('Encaissements et paiements partiels V1', () => {
   test('paiement partiel, idempotence, solde nul, arrêt des relances et isolation', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('payments-a')}@example.com`;
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();

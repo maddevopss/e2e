@@ -1,5 +1,6 @@
 const { execFileSync } = require('child_process');
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
@@ -57,7 +58,7 @@ function seedMissingAccountingSource({ organisationId, sourceType, sourceId, amo
 
 test.describe('Correction comptable contrôlée', () => {
   test('prévisualise, confirme, applique et prouve la résolution réelle', async ({ page, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     await signupAndCompleteOnboardingUi(page, {
       organisation: unique('Correction-comptable'),
       user: 'Responsable comptable E2E',

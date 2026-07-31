@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
 const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
 
@@ -37,7 +38,7 @@ test.describe('Verrou des périodes comptables', () => {
       organisation: unique('Verrou-periode'),
       user: 'Responsable comptable E2E',
       email: `${unique('accounting-period-lock')}@example.com`,
-      password: 'TestPassword123!',
+      password: makeTestPassword(),
     });
 
     const access = await captureAccountingAccess(page);

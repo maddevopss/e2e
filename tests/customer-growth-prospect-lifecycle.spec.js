@@ -1,9 +1,10 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 
 test.describe('Parcours commercial prospect vers client', () => {
   test('suit, qualifie et convertit un prospect sans fuite entre organisations', async ({ browser }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const prospectName = unique('Prospect-A');
     const companyName = unique('Entreprise-A');
     const followupSubject = unique('Relance-A');

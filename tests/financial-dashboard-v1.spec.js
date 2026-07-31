@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
+const { makeTestPassword } = require('./helpers/credentials');
 const { apiUrl, apiRequest, entity, signup, unique } = require('./helpers/auth');
 const { queryScalar, sqlLiteral, stripeSignature } = require('./helpers/finance');
 
 test.describe('Tableau financier utile V1', () => {
   test('facturé, payé, à recevoir, retard, meilleurs clients et tendance restent isolés', async ({ browser, request }) => {
-    const password = 'TestPassword123!';
+    const password = makeTestPassword();
     const emailA = `${unique('financial-dashboard-a')}@example.com`;
     const contextA = await browser.newContext();
     const pageA = await contextA.newPage();
