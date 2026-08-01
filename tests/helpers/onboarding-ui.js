@@ -37,4 +37,21 @@ async function signupAndCompleteOnboardingUi(page, account) {
   await expect(page.getByRole('button', { name: /Déconnexion|Logout/i })).toBeVisible();
 }
 
-module.exports = { signupAndCompleteOnboardingUi };
+// La page /login (Login.jsx) n'a pas d'attributs name/placeholder sur ses champs
+// (contrairement à /signup) : on cible par type. Elle ne passe pas par l'enveloppe
+// {success,code,data} habituelle pour le corps de réponse, donc pas de helper json().
+async function loginUi(page, { email, password }) {
+  await page.goto('/login');
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill(password);
+
+  const responsePromise = page.waitForResponse((response) =>
+    response.request().method() === 'POST' && /\/login(?:[/?#]|$)/i.test(response.url())
+  );
+  await page.getByRole('button', { name: /Se connecter/i }).click();
+  await responsePromise;
+
+  await expect(page).toHaveURL(/\/dashboard(?:[/?#]|$)/i, { timeout: 10_000 });
+}
+
+module.exports = { signupAndCompleteOnboardingUi, loginUi };
