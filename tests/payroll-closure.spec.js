@@ -124,17 +124,29 @@ test.describe('Fermeture du module Paie', () => {
     expect([200, 201]).toContain(runResponse.status());
     const run = (await json(runResponse)).run;
 
-    // Calcul : heures pour l'employé horaire, le salarié se calcule automatiquement
+    // Calcul : heures (+ prime) pour l'employé horaire, le salarié se calcule
+    // automatiquement à partir du salaire annuel (+ commission).
     const calculateResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/calculate`, {
       method: 'POST',
       data: {
         idempotencyKey: unique('run-calc'),
-        entries: [{ employeeId: hourlyEmployee.id, regularHours: 70, overtimeHours: 5 }],
+        entries: [
+          { employeeId: hourlyEmployee.id, regularHours: 70, overtimeHours: 5, bonus: 250 },
+          { employeeId: salaryEmployee.id, commission: 150 },
+        ],
       },
     });
     expect(calculateResponse.status()).toBe(201);
     const calculated = (await json(calculateResponse)).run;
     expect(Number(calculated.totals.gross)).toBeGreaterThan(0);
+
+    // Preuve que la prime et la commission entrent bien dans le brut : 70h à 30$ +
+    // 5h supp. à 45$ + 250$ de prime = 2575$ ; salaire annuel/26 + 150$ de commission.
+    const calculatedRunDetail = await json(await api(page.request, access.payrollBaseUrl, `/runs/${run.id}`));
+    const hourlyLine = calculatedRunDetail.lines.find((line) => line.employee_number === hourlyEmployee.employee_number);
+    const salaryLine = calculatedRunDetail.lines.find((line) => line.employee_number === salaryEmployee.employee_number);
+    expect(Number(hourlyLine.gross_pay)).toBeCloseTo(2575, 2);
+    expect(Number(salaryLine.gross_pay)).toBeCloseTo(78000 / 26 + 150, 2);
 
     // Approbation puis paiement
     const approveResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/approve`, {
@@ -164,6 +176,17 @@ test.describe('Fermeture du module Paie', () => {
     const entryDetail = await json(await api(page.request, access.accountingBaseUrl, `/entries/${runDetail.run.accounting_entry_id}`));
     expect(entryDetail.entry.status).toBe('posted');
     expect(entryDetail.totals.balanced).toBe(true);
+
+    // Export contrôlé (#318, Sprint 7) : registre et talons en CSV
+    const registerCsvResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/register/export.csv`);
+    expect(registerCsvResponse.ok()).toBeTruthy();
+    expect(registerCsvResponse.headers()['content-type']).toContain('text/csv');
+    expect(await registerCsvResponse.text()).toContain(hourlyEmployee.legal_name);
+
+    const payStubsCsvResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/pay-stubs/export.csv`);
+    expect(payStubsCsvResponse.ok()).toBeTruthy();
+    expect(payStubsCsvResponse.headers()['content-type']).toContain('text/csv');
+    expect(await payStubsCsvResponse.text()).toContain(salaryEmployee.legal_name);
 
     // Rapprochement du cycle payé (avant sa correction : le rapprochement exige un
     // cycle approuvé ou payé, pas un cycle déjà corrigé)
@@ -211,6 +234,23 @@ test.describe('Fermeture du module Paie', () => {
       data: { idempotencyKey: unique('run-correct-invalid'), reason: 'Tentative invalide après correction déjà appliquée', confirmedByHuman: true },
     });
     expect(invalidCorrectionResponse.status()).toBe(409);
+
+    // Journal d'approbation (#318, Sprint 7) : chaque transition du cycle laisse une
+    // trace horodatée, y compris la correction qui vient d'être appliquée.
+    const runEvents = (await json(await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/events`))).events;
+    const runEventTypes = runEvents.map((event) => event.event_type);
+    expect(runEventTypes).toEqual(expect.arrayContaining([
+      'payroll.run.calculated',
+      'payroll.run.approved',
+      'payroll.run.paid',
+      'payroll.run.corrected',
+    ]));
+
+    // Historique des modifications de rémunération (#318, Sprint 7) : l'embauche
+    // laisse une trace consultable dans payroll_compensation_history.
+    const compensationHistory = (await json(await api(page.request, access.payrollBaseUrl, `/employees/${hourlyEmployee.id}/compensation-history`))).history;
+    expect(compensationHistory.length).toBeGreaterThan(0);
+    expect(compensationHistory[0].reason).toBe('Embauche');
 
     // Second cycle pour prouver l'annulation (void) d'un cycle approuvé
     const period2 = (await json(await api(page.request, access.payrollBaseUrl, '/periods', {
