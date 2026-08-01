@@ -11,17 +11,25 @@ if (!fs.existsSync(scenarioPath)) {
 } else {
   const scenario = fs.readFileSync(scenarioPath, 'utf8');
   const requiredFragments = [
-    '/api/payroll/employees',
-    '/api/payroll/periods',
-    '/api/payroll/runs',
-    '/api/payroll/remittances/deposits',
-    '/api/payroll/remittances/vacations',
-    '/api/payroll/remittances/terminations',
-    '/api/payroll/remittances/year-end-slips',
-    '/api/payroll/remittances/reconciliation',
-    'E2E_PAYROLL_TOKEN_A',
-    'E2E_PAYROLL_TOKEN_B',
-    'idsA',
+    '/employees',
+    "payType: 'hourly'",
+    "payType: 'salary'",
+    '/rulesets',
+    '/activate',
+    '/periods',
+    '/runs',
+    '/calculate',
+    '/approve',
+    '/pay',
+    '/void',
+    '/post-accounting',
+    'accounting_entry_id',
+    '/remittances/terminations',
+    '/remittances/year-end-slips',
+    '/amend',
+    '/remittances/reconciliation',
+    'tenantBContext',
+    "expect(forbiddenRunDetail.status()).toBe(404)",
   ];
   for (const fragment of requiredFragments) {
     if (!scenario.includes(fragment)) errors.push(`Étape de paie contractuelle absente: ${fragment}`);
