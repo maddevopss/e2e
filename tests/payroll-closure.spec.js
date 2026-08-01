@@ -54,6 +54,15 @@ test.describe('Fermeture du module Paie', () => {
     expect(expenseAccount).toBeTruthy();
     expect(payableAccount).toBeTruthy();
 
+    // Période comptable ouverte couvrant la paie de janvier 2039 : la comptabilisation
+    // d'un cycle de paie n'exige pas de période ouverte, mais son renversement
+    // (correction) le vérifie via assertOpenAccountingPeriod.
+    const accountingPeriodResponse = await api(page.request, access.accountingBaseUrl, '/periods', {
+      method: 'POST',
+      data: { fiscalYear: 2039, periodNumber: 1, startsOn: '2039-01-01', endsOn: '2039-01-31' },
+    });
+    expect(accountingPeriodResponse.status()).toBe(201);
+
     // Employé horaire
     const hourlyResponse = await api(page.request, access.payrollBaseUrl, '/employees', {
       method: 'POST',
@@ -156,6 +165,53 @@ test.describe('Fermeture du module Paie', () => {
     expect(entryDetail.entry.status).toBe('posted');
     expect(entryDetail.totals.balanced).toBe(true);
 
+    // Rapprochement du cycle payé (avant sa correction : le rapprochement exige un
+    // cycle approuvé ou payé, pas un cycle déjà corrigé)
+    const reconciliationResponse = await api(page.request, access.payrollBaseUrl, `/remittances/reconciliation/runs/${run.id}`, {
+      method: 'POST',
+      data: { depositedNet: calculated.totals.net, remittedTotal: calculated.totals.deductions },
+    });
+    expect(reconciliationResponse.status()).toBe(201);
+    const reconciliation = (await json(reconciliationResponse)).reconciliation;
+    expect(['balanced', 'warning', 'blocked']).toContain(reconciliation.status);
+
+    // Correction d'un cycle déjà payé : /void est réservé à avant paiement, la
+    // correction doit renverser l'écriture publiée (non destructif) et distinguer
+    // le cycle 'corrected' d'une simple annulation pré-paiement.
+    const correctionIdempotencyKey = unique('run-correct');
+    const correctionResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/correct`, {
+      method: 'POST',
+      data: {
+        idempotencyKey: correctionIdempotencyKey,
+        reason: 'Correction E2E du cycle payé pour erreur de calcul',
+        reversalDate: '2039-01-20',
+        confirmedByHuman: true,
+      },
+    });
+    expect(correctionResponse.status()).toBe(201);
+    const correction = await json(correctionResponse);
+    expect(correction.run.status).toBe('corrected');
+    expect(correction.reversal.reversal.id).toBeTruthy();
+
+    const reversedEntryDetail = await json(await api(page.request, access.accountingBaseUrl, `/entries/${runDetail.run.accounting_entry_id}`));
+    expect(reversedEntryDetail.entry.status).toBe('reversed');
+    expect(reversedEntryDetail.entry.reversed_by_entry_id).toBeTruthy();
+
+    // Rejeu idempotent : même clé, aucune nouvelle correction ni renversement
+    const duplicateCorrectionResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/correct`, {
+      method: 'POST',
+      data: { idempotencyKey: correctionIdempotencyKey, reason: 'Correction E2E du cycle payé pour erreur de calcul', confirmedByHuman: true },
+    });
+    expect(duplicateCorrectionResponse.status()).toBe(200);
+    expect((await json(duplicateCorrectionResponse)).duplicate).toBe(true);
+
+    // Un cycle non payé ne peut pas être "corrigé" (seulement annulé)
+    const invalidCorrectionResponse = await api(page.request, access.payrollBaseUrl, `/runs/${run.id}/correct`, {
+      method: 'POST',
+      data: { idempotencyKey: unique('run-correct-invalid'), reason: 'Tentative invalide après correction déjà appliquée', confirmedByHuman: true },
+    });
+    expect(invalidCorrectionResponse.status()).toBe(409);
+
     // Second cycle pour prouver l'annulation (void) d'un cycle approuvé
     const period2 = (await json(await api(page.request, access.payrollBaseUrl, '/periods', {
       method: 'POST',
@@ -226,15 +282,6 @@ test.describe('Fermeture du module Paie', () => {
     expect(slipAmend.status()).toBe(201);
     const amendedSlip = (await json(slipAmend)).slip;
     expect(String(amendedSlip.amended_from_id)).toBe(String(slip.id));
-
-    // Rapprochement du cycle payé
-    const reconciliationResponse = await api(page.request, access.payrollBaseUrl, `/remittances/reconciliation/runs/${run.id}`, {
-      method: 'POST',
-      data: { depositedNet: calculated.totals.net, remittedTotal: calculated.totals.deductions },
-    });
-    expect(reconciliationResponse.status()).toBe(201);
-    const reconciliation = (await json(reconciliationResponse)).reconciliation;
-    expect(['balanced', 'warning', 'blocked']).toContain(reconciliation.status);
 
     // Isolation multi-organisation
     const tenantBContext = await browser.newContext();
