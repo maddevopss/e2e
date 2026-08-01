@@ -32,6 +32,12 @@ if (!fs.existsSync(scenarioPath)) {
     '/remittances/year-end-slips',
     '/amend',
     '/remittances/reconciliation',
+    "role: 'manager'",
+    "role: 'employe'",
+    'loginUi',
+    'expect(managerApproveResponse.status()).toBe(403)',
+    'expect(employeeListResponse.status()).toBe(403)',
+    'expect(employeeStubs).toHaveLength(1)',
     'tenantBContext',
     "expect(forbiddenRunDetail.status()).toBe(404)",
   ];

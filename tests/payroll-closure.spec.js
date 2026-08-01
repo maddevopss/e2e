@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const { makeTestPassword } = require('./helpers/credentials');
 const { unique } = require('./helpers/auth');
-const { signupAndCompleteOnboardingUi } = require('./helpers/onboarding-ui');
+const { signupAndCompleteOnboardingUi, loginUi } = require('./helpers/onboarding-ui');
 
 async function capturePayrollAccess(page) {
   // L'auth web repose sur des cookies httpOnly (pas de header Authorization) :
@@ -282,6 +282,84 @@ test.describe('Fermeture du module Paie', () => {
     expect(slipAmend.status()).toBe(201);
     const amendedSlip = (await json(slipAmend)).slip;
     expect(String(amendedSlip.amended_from_id)).toBe(String(slip.id));
+
+    // Séparation préparateur/approbateur (#318, #363) : un manager prépare mais ne
+    // peut pas approuver ; un employé n'a aucun accès aux données de préparation
+    // mais consulte son propre talon de paie, jamais celui d'un collègue.
+    const apiBaseUrl = access.payrollBaseUrl.replace(/\/payroll$/, '');
+    const managerPassword = makeTestPassword();
+    const managerEmail = `${unique('payroll-manager')}@example.com`;
+    const managerCreateResponse = await api(page.request, apiBaseUrl, '/users', {
+      method: 'POST',
+      data: { nom: 'Gestionnaire Paie', email: managerEmail, password: managerPassword, role: 'manager' },
+    });
+    expect(managerCreateResponse.status()).toBe(201);
+
+    const employeePassword = makeTestPassword();
+    const employeeEmail = `${unique('payroll-employe')}@example.com`;
+    const employeeCreateResponse = await api(page.request, apiBaseUrl, '/users', {
+      method: 'POST',
+      data: { nom: 'Employé Libre-Service', email: employeeEmail, password: employeePassword, role: 'employe' },
+    });
+    expect(employeeCreateResponse.status()).toBe(201);
+    const linkedUserId = (await json(employeeCreateResponse)).id;
+
+    const selfServiceEmployee = (await json(await api(page.request, access.payrollBaseUrl, '/employees', {
+      method: 'POST',
+      data: {
+        employeeNumber: unique('SELF'),
+        legalName: 'Employe LibreService',
+        hireDate: '2039-01-01',
+        payType: 'salary',
+        annualSalary: 52000,
+        payFrequency: 'biweekly',
+        userId: linkedUserId,
+      },
+    }))).employee;
+
+    const permsPeriod = (await json(await api(page.request, access.payrollBaseUrl, '/periods', {
+      method: 'POST',
+      data: { frequency: 'biweekly', periodStart: '2039-02-01', periodEnd: '2039-02-14', payDate: '2039-02-16' },
+    }))).period;
+    const permsRun = (await json(await api(page.request, access.payrollBaseUrl, `/periods/${permsPeriod.id}/runs`, {
+      method: 'POST',
+      data: { idempotencyKey: unique('perms-run-create') },
+    }))).run;
+    await api(page.request, access.payrollBaseUrl, `/runs/${permsRun.id}/calculate`, {
+      method: 'POST',
+      data: { idempotencyKey: unique('perms-run-calc'), entries: [] },
+    });
+
+    const managerContext = await browser.newContext();
+    const managerPage = await managerContext.newPage();
+    await loginUi(managerPage, { email: managerEmail, password: managerPassword });
+
+    const managerPrepareResponse = await api(managerPage.request, access.payrollBaseUrl, '/employees', {
+      method: 'POST',
+      data: { employeeNumber: unique('MGR'), legalName: 'Cree Par Gestionnaire', hireDate: '2039-01-01', payType: 'salary', annualSalary: 51000, payFrequency: 'biweekly' },
+    });
+    expect(managerPrepareResponse.status()).toBe(201);
+
+    const managerApproveResponse = await api(managerPage.request, access.payrollBaseUrl, `/runs/${permsRun.id}/approve`, {
+      method: 'POST',
+      data: { idempotencyKey: unique('perms-run-approve-mgr'), reason: 'Tentative gestionnaire' },
+    });
+    expect(managerApproveResponse.status()).toBe(403);
+    await managerContext.close();
+
+    const employeeContext = await browser.newContext();
+    const employeePage = await employeeContext.newPage();
+    await loginUi(employeePage, { email: employeeEmail, password: employeePassword });
+
+    const employeeListResponse = await api(employeePage.request, access.payrollBaseUrl, '/employees');
+    expect(employeeListResponse.status()).toBe(403);
+
+    const employeeStubResponse = await api(employeePage.request, access.payrollBaseUrl, `/runs/${permsRun.id}/pay-stubs`);
+    expect(employeeStubResponse.status()).toBe(200);
+    const employeeStubs = (await json(employeeStubResponse)).payStubs;
+    expect(employeeStubs).toHaveLength(1);
+    expect(employeeStubs[0].employeeNumber).toBe(selfServiceEmployee.employee_number);
+    await employeeContext.close();
 
     // Isolation multi-organisation
     const tenantBContext = await browser.newContext();
