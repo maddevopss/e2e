@@ -93,6 +93,15 @@ test.describe('cycle complet gouvernance documentaire avancée', () => {
     const retention = (await retentionResponse.json()).data;
     expect(retention.status).toBe('pending');
 
+    // Le demandeur (utilisateur authentifié, id 1) ne peut pas être son propre approbateur — la
+    // comparaison doit tolérer que requested_by_user_id revienne en bigint (chaîne) de la base
+    // alors que approvedByUserId est un nombre JSON fourni par le client.
+    const badRequesterApproverResponse = await request.post(`${API_URL}/document-governance/retention-actions/${retention.id}/execute`, {
+      headers: withKey('exec-requester-bad'),
+      data: { approvedByUserId: 1, executedByUserId: 3, evidence: ['archive-confirmée.pdf'] },
+    });
+    expect(badRequesterApproverResponse.status()).toBe(409);
+
     const badExecuteResponse = await request.post(`${API_URL}/document-governance/retention-actions/${retention.id}/execute`, {
       headers: withKey('exec-bad'),
       data: { approvedByUserId: 2, executedByUserId: 2, evidence: ['archive-confirmée.pdf'] },
