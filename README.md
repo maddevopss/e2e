@@ -1,14 +1,16 @@
 # MADSuite E2E
 
+**Version du package : 0.1.0.**
+
 Dépôt officiel des tests de bout en bout de MADSuite.
 
 ## Source de vérité
 
 ```text
-bleeband/SYSTEME_MAD
+maddevopss/SYSTEME_MAD
 ```
 
-Documents liés, à lire à la racine du dépôt `bleeband/SYSTEME_MAD` :
+Documents liés, à lire à la racine du dépôt `maddevopss/SYSTEME_MAD` :
 
 ```text
 09-CHECKLISTS/chk-033-validation-mobile-responsive-madsuite.md
